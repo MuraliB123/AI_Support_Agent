@@ -18,6 +18,7 @@ Built with **LangGraph**, **DeepSeek**, local **BGE** embeddings, and **MongoDB 
 
 ![Support agent graph](docs/support_graph.png)
 
+
 **What each stage does**
 
 | Node | Role |
@@ -30,10 +31,6 @@ Built with **LangGraph**, **DeepSeek**, local **BGE** embeddings, and **MongoDB 
 | `hitl_review` | LangGraph `interrupt()` with draft, citations, low-confidence flag; resumes via `Command(resume=…)` for approve / edit / reject / regenerate / escalate. |
 
 
-**UIs**
-
-- Customer: http://127.0.0.1:8000/ — open ticket, chat, live status
-- Agent: http://127.0.0.1:8000/agent — HITL queue, draft review, citations
 
 ---
 
@@ -101,22 +98,6 @@ python -m src.main --serve --reload
 ```powershell
 pytest -q
 ```
-
----
-
-## Typical ticket path
-
-1. Customer opens a ticket in the chat UI.
-2. Conversation agent asks follow-ups until context is enough.
-3. Hybrid retrieval pulls grounded policy chunks.
-4. Decision agent routes to **resolution**, **reject**, or **escalate**.
-5. Action node drafts a reply.
-6. Graph pauses at HITL; agent approves, edits, rejects, regenerates, or escalates.
-7. Audit line appended under `outputs/audit/{ticket_id}.jsonl`.
-
-Conversation + checkpointer memory are **server-scoped** (in-process). Restart clears paused runs and the status bus.
-
----
 
 ## Repository layout
 
