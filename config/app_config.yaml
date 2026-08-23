@@ -1,0 +1,32 @@
+app:
+  name: nimbus-support-agent
+  brand: Nimbus Home
+  domain: ecommerce
+  draft_only: true  # never auto-send replies
+
+paths:
+  knowledge_base: data/knowledge_base
+  tickets: data/tickets
+  evaluation: data/evaluation
+  audit: outputs/audit
+
+mongodb:
+  database: nimbus_support
+  collections:
+    chunks: kb_chunks
+    memory: ticket_memory
+    audit: audit_logs
+
+chunking:
+  # Approximate token targets for heading-aware MD splits
+  target_tokens_min: 400
+  target_tokens_max: 800
+  overlap_ratio: 0.12
+
+retrieval:
+  dense_top_k: 12
+  sparse_top_k: 12
+  rerank_top_n: 20
+  final_top_k: 5
+  # Soft tenancy: always include global + optional tenant scope
+  default_scope: global

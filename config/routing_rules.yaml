@@ -1,0 +1,38 @@
+# Thresholds used by LangGraph route + confidence loop (Phase 6)
+routes:
+  auto_resolve:
+    min_confidence: 0.75
+    require_citation: true
+    max_missing_fields: 0
+  ask_clarification:
+    # Missing order id, photos, etc.
+    when_missing_fields: true
+  escalate:
+    when_no_policy: true
+    when_confidence_below: 0.45
+    categories:
+      - chargeback
+      - legal
+      - vip_high_value
+  refuse:
+    categories:
+      - refund_abuse
+      - abusive_language
+
+confidence_loop:
+  enabled: true
+  max_retries: 2
+  re_retrieve_on_weak_citations: true
+
+hitl:
+  required_for:
+    - auto_resolve
+    - escalate
+    - refuse
+    - ask_clarification
+  actions:
+    - approve
+    - reject
+    - edit
+    - request_regeneration
+    - escalate
