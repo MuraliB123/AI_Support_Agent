@@ -9,11 +9,13 @@ from typing import Any
 
 from langgraph.types import Command
 
+from src.logging.audit import append_audit
 from src.graph.state import new_state
 from src.graph.support_graph import get_compiled_graph
 from src.queue import publish
 
-RunPhase = str  # "running" | "waiting_user" | "complete" | "error"
+# running | waiting_user | waiting_hitl | complete | error
+RunPhase = str
 
 
 class TicketRunner:
@@ -39,6 +41,16 @@ class TicketRunner:
         with self._lock:
             return ticket_id in self._runs
 
+    def list_runs(self, *, phase: str | None = None) -> list[dict[str, Any]]:
+        with self._lock:
+            out: list[dict[str, Any]] = []
+            for ticket_id, run in self._runs.items():
+                if phase and run.get("phase") != phase:
+                    continue
+                row = {"ticket_id": ticket_id, **dict(run)}
+                out.append(row)
+            return out
+
     # -- graph execution -------------------------------------------------
 
     def _config(self, ticket_id: str) -> dict[str, Any]:
@@ -61,29 +73,78 @@ class TicketRunner:
                 if is_auth
                 else "Something went wrong while processing this ticket."
             )
-            self._set(ticket_id, phase="error", error=detail)
+            self._set(ticket_id, phase="error", error=detail, interrupt=None)
             publish(ticket_id, "error", message, error=detail)
+            append_audit(ticket_id, "error", error=detail)
             return
 
         interrupts = result.get("__interrupt__") or []
         if interrupts:
-            question = ""
             value = getattr(interrupts[0], "value", None)
-            if isinstance(value, dict):
-                question = value.get("question", "")
-            self._set(
-                ticket_id,
-                phase="waiting_user",
-                question=question,
-                state=result,
-            )
+            if not isinstance(value, dict):
+                value = {}
+            interrupt_type = value.get("type", "followup_question")
+            if interrupt_type == "hitl_review":
+                self._set(
+                    ticket_id,
+                    phase="waiting_hitl",
+                    question="",
+                    interrupt=value,
+                    state=result,
+                )
+                append_audit(
+                    ticket_id,
+                    "waiting_hitl",
+                    decision=value.get("decision"),
+                    confidence=value.get("confidence"),
+                    draft_summary=value.get("draft_summary"),
+                )
+            else:
+                self._set(
+                    ticket_id,
+                    phase="waiting_user",
+                    question=value.get("question", ""),
+                    interrupt=value,
+                    state=result,
+                )
+                append_audit(
+                    ticket_id,
+                    "waiting_user",
+                    question=value.get("question", ""),
+                )
             return
 
-        self._set(ticket_id, phase="complete", question="", state=result)
+        self._set(
+            ticket_id,
+            phase="complete",
+            question="",
+            interrupt=None,
+            state=result,
+        )
+        hitl_status = result.get("hitl_status", "")
+        if hitl_status == "approved":
+            message = "An agent approved a draft reply for your ticket."
+        elif hitl_status == "rejected":
+            message = "An agent closed this draft without sending a reply."
+        else:
+            message = "Ticket processing finished."
         publish(
             ticket_id,
             "complete",
-            "Retrieval complete. Your ticket is ready for the next stage.",
+            message,
+            decision=result.get("decision"),
+            action_type=result.get("action_type"),
+            hitl_status=hitl_status,
+        )
+        append_audit(
+            ticket_id,
+            "complete",
+            decision=result.get("decision"),
+            action_type=result.get("action_type"),
+            hitl_status=hitl_status,
+            hitl_action=result.get("hitl_action"),
+            confidence=result.get("confidence"),
+            policy_citations=result.get("policy_citations"),
         )
 
     def start(
@@ -108,12 +169,32 @@ class TicketRunner:
             question="",
             subject=subject,
             customer_id=customer_id,
+            interrupt=None,
+        )
+        append_audit(
+            ticket_id,
+            "ticket_started",
+            subject=subject,
+            customer_id=customer_id,
+            priority=priority,
         )
         self._pool.submit(self._execute, ticket_id, state)
 
     def resume(self, ticket_id: str, message: str) -> None:
-        self._set(ticket_id, phase="running", question="")
+        """Resume a customer follow-up interrupt with a plain string answer."""
+        self._set(ticket_id, phase="running", question="", interrupt=None)
+        append_audit(ticket_id, "customer_reply")
         self._pool.submit(self._execute, ticket_id, Command(resume=message))
+
+    def resume_hitl(self, ticket_id: str, decision: dict[str, Any]) -> None:
+        """Resume a HITL interrupt with an agent decision dict."""
+        self._set(ticket_id, phase="running", question="", interrupt=None)
+        append_audit(
+            ticket_id,
+            "hitl_decision",
+            action=decision.get("action"),
+        )
+        self._pool.submit(self._execute, ticket_id, Command(resume=decision))
 
 
 _runner = TicketRunner()

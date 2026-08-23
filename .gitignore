@@ -24,3 +24,6 @@ build/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local audit artifacts
+outputs/audit/

@@ -19,13 +19,13 @@ todos:
     status: completed
   - id: phase-5-decision-actions
     content: Decision node + ActionEscalate / ActionReject / ActionResolution
-    status: pending
+    status: completed
   - id: phase-6-hitl-ui
     content: HITL human-agent HTML UI + low-confidence note (no confidence loop)
-    status: pending
+    status: completed
   - id: phase-7-memory-audit
-    content: Ticket thread memory + audit logs
-    status: pending
+    content: JSONL audit only (server-scoped memory; no Phoenix/Arize tracing)
+    status: completed
   - id: phase-8-eval-demo
     content: Synthetic tickets, golden eval, end-to-end demo, README
     status: pending
@@ -47,6 +47,8 @@ Learning is the product: LCEL, LangGraph, Atlas retrieval, rerank, metadata filt
 - Phase 2 BGE-small `embedd` (384) in place + Atlas `vector_index` on `embedd`
 - Phase 3 TicketIn + Conversation + customer chat UI + in-memory status queue
 - Phase 4 Retrieval: LLM expand → Atlas `$vectorSearch` + metadata/keyword BM25 → RRF top-N
+- Phase 5 Decision (`escalate`|`reject`|`resolution`) + three action draft nodes; escalation MD inject + inline reject scope
+- Phase 6 HITL agent UI (`/agent`) with interrupt approve/edit/reject/regenerate/escalate + low-confidence note
 - Sample CLIs: [src/retrieval/vector_search.py](src/retrieval/vector_search.py), [src/retrieval/run_pipeline.py](src/retrieval/run_pipeline.py)
 
 ## Locked decisions (updated)

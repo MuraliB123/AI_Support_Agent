@@ -163,6 +163,10 @@ def graph():
 
 
 def test_graph_retrieval_node_publishes_status(graph, monkeypatch):
+    from src.agents import actions as actions_module
+    from src.agents import decision as decision_module
+    from src.agents import hitl as hitl_module
+
     fake = FakeChatModel(
         [
             ContextAssessment(
@@ -216,6 +220,40 @@ def test_graph_retrieval_node_publishes_status(graph, monkeypatch):
         ],
     )
 
+    monkeypatch.setattr(
+        decision_module,
+        "decide_action",
+        lambda state: {
+            "decision": "resolution",
+            "confidence": 0.9,
+            "decision_rationale": "stub",
+            "escalation_code": "",
+            "reject_reason": "",
+            "cited_chunk_ids": ["c1"],
+        },
+    )
+    monkeypatch.setattr(
+        actions_module,
+        "action_resolution",
+        lambda state: {
+            "action_type": "resolution",
+            "draft": "You have 14 days per REFUND-14DAY.",
+            "draft_summary": "return window",
+            "policy_citations": ["REFUND-14DAY"],
+            "hitl_note": "",
+        },
+    )
+    monkeypatch.setattr(
+        hitl_module,
+        "hitl_review",
+        lambda state: {
+            "hitl_status": "approved",
+            "hitl_action": "approve",
+            "approved_draft": state.get("draft", ""),
+            "draft": state.get("draft", ""),
+        },
+    )
+
     ticket_id = "TKT-RET01"
     get_status_bus().clear(ticket_id)
     state = new_state(
@@ -228,10 +266,12 @@ def test_graph_retrieval_node_publishes_status(graph, monkeypatch):
 
     assert result["retrieved_chunks"][0]["policy_id"] == "REFUND-14DAY"
     assert result["query_expansion"]["search_query"] == "return window policy"
+    assert result["decision"] == "resolution"
+    assert "REFUND-14DAY" in result["draft"]
 
     stages = [e.stage for e in get_status_bus().events_since(ticket_id)]
     assert stages[0] == "ticket_received"
     assert "expanding_query" in stages
     assert "searching" in stages
     assert "reranking" in stages
-    assert stages[-1] == "retrieval_done"
+    assert "retrieval_done" in stages

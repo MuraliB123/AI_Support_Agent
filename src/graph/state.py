@@ -7,6 +7,7 @@ from typing import Annotated, Any, Literal, TypedDict
 from langgraph.graph.message import add_messages
 
 ConversationStatus = Literal["need_more_info", "enough_context"]
+DecisionAction = Literal["escalate", "reject", "resolution"]
 
 
 class SupportState(TypedDict, total=False):
@@ -33,10 +34,25 @@ class SupportState(TypedDict, total=False):
     dense_hit_count: int
     sparse_hit_count: int
 
-    # Filled by later phases (decision, actions)
-    decision: str
+    # Decision node output (Phase 5)
+    decision: DecisionAction
     confidence: float
+    decision_rationale: str
+    escalation_code: str
+    reject_reason: str
+    cited_chunk_ids: list[str]
+
+    # Action node output (Phase 5)
+    action_type: DecisionAction
     draft: str
+    draft_summary: str
+    policy_citations: list[str]
+    hitl_note: str
+
+    # HITL node output (Phase 6)
+    hitl_status: str
+    hitl_action: str
+    approved_draft: str
 
 
 def new_state(

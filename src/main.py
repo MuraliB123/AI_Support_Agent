@@ -45,6 +45,7 @@ def main() -> None:
         import uvicorn
 
         print(f"Customer chat UI: http://{args.host}:{args.port}/")
+        print(f"Agent HITL UI:    http://{args.host}:{args.port}/agent")
         uvicorn.run(
             "src.api.server:app",
             host=args.host,

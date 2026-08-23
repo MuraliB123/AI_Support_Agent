@@ -19,7 +19,7 @@ mongodb:
 
 conversation:
   # Clarifying questions the intake node may ask before moving to retrieval
-  max_followups: 3
+  max_followups: 5
 
 chunking:
   # Approximate token targets for heading-aware MD splits

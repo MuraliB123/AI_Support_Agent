@@ -19,6 +19,7 @@ const state = {
   phase: null,
   pollTimer: null,
   askedQuestions: new Set(),
+  shownApproved: false,
 };
 
 function addBubble(text, role, sender) {
@@ -89,11 +90,16 @@ function setComposerMode(mode) {
     els.message.disabled = true;
     els.send.disabled = true;
     els.hint.textContent = "Working on your ticket...";
+  } else if (mode === "awaiting_agent") {
+    els.message.disabled = true;
+    els.send.disabled = true;
+    els.hint.textContent =
+      "A human agent is reviewing the draft reply. This page will update when they finish.";
   } else if (mode === "done") {
     els.message.disabled = true;
     els.send.disabled = true;
     els.hint.textContent =
-      "Intake complete. A human agent reviews every reply before it is sent.";
+      "Ticket complete. Replies are draft-only and never auto-emailed.";
   }
 }
 
@@ -126,6 +132,31 @@ async function pollEvents() {
         showTyping(false);
         addBubble(`Summary: ${event.data.summary}`, "system");
       }
+      if (event.stage === "waiting_hitl") {
+        showTyping(false);
+        addBubble(
+          "Your ticket is with a human agent for review. Nothing is sent until they approve.",
+          "system"
+        );
+      }
+      if (
+        (event.stage === "hitl_approved" || event.stage === "complete") &&
+        data.approved_draft &&
+        !state.shownApproved
+      ) {
+        state.shownApproved = true;
+        showTyping(false);
+        const label =
+          data.decision === "escalate" ? "Support update" : "Agent-approved draft";
+        addBubble(data.approved_draft, "agent", label);
+      }
+      if (event.stage === "hitl_rejected") {
+        showTyping(false);
+        addBubble(
+          "An agent closed this draft without sending a customer reply.",
+          "system"
+        );
+      }
     }
 
     state.phase = data.phase;
@@ -133,11 +164,24 @@ async function pollEvents() {
     if (data.phase === "waiting_user") {
       showTyping(false);
       setComposerMode("followup");
+    } else if (data.phase === "waiting_hitl") {
+      showTyping(false);
+      setComposerMode("awaiting_agent");
     } else if (data.phase === "running") {
       showTyping(true);
       setComposerMode("locked");
     } else {
       showTyping(false);
+      if (
+        data.approved_draft &&
+        !state.shownApproved &&
+        data.hitl_status === "approved"
+      ) {
+        state.shownApproved = true;
+        const label =
+          data.decision === "escalate" ? "Support update" : "Agent-approved draft";
+        addBubble(data.approved_draft, "agent", label);
+      }
       setComposerMode("done");
       stopPolling();
     }

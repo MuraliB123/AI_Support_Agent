@@ -8,6 +8,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
 from src.agents import conversation as conversation_module
+from src.agents import decision as decision_module
 from src.agents import retrieval as retrieval_module
 from src.agents.conversation import ContextAssessment
 from src.graph.state import new_state
@@ -38,6 +39,54 @@ def _stub_retrieval(monkeypatch) -> None:
     monkeypatch.setattr(
         retrieval_module, "rerank", lambda **_k: []
     )
+
+
+def _stub_decision_and_actions(monkeypatch) -> None:
+    """Skip Phase 5 LLM calls in earlier-phase graph tests."""
+    from src.agents import actions as actions_module
+    from src.agents import hitl as hitl_module
+    from src.queue import publish
+
+    def fake_decide(state):
+        publish(
+            state["ticket_id"],
+            "decision_ready",
+            "Decision: resolution (confidence 0.99)",
+            action="resolution",
+        )
+        return {
+            "decision": "resolution",
+            "confidence": 0.99,
+            "decision_rationale": "stub",
+            "escalation_code": "",
+            "reject_reason": "",
+            "cited_chunk_ids": [],
+        }
+
+    def fake_action(state):
+        publish(state["ticket_id"], "action_done", "Draft ready (resolution).")
+        return {
+            "action_type": "resolution",
+            "draft": "stub draft",
+            "draft_summary": "stub",
+            "policy_citations": [],
+            "hitl_note": "",
+        }
+
+    def fake_hitl(state):
+        publish(state["ticket_id"], "hitl_approved", "Agent approved the draft.")
+        return {
+            "hitl_status": "approved",
+            "hitl_action": "approve",
+            "approved_draft": state.get("draft") or "stub draft",
+            "draft": state.get("draft") or "stub draft",
+        }
+
+    monkeypatch.setattr(decision_module, "decide_action", fake_decide)
+    monkeypatch.setattr(actions_module, "action_resolution", fake_action)
+    monkeypatch.setattr(actions_module, "action_escalate", fake_action)
+    monkeypatch.setattr(actions_module, "action_reject", fake_action)
+    monkeypatch.setattr(hitl_module, "hitl_review", fake_hitl)
 
 
 class FakeChatModel:
@@ -75,6 +124,7 @@ def _run(graph, ticket_id: str):
 
 def test_asks_followup_then_completes(graph, monkeypatch):
     _stub_retrieval(monkeypatch)
+    _stub_decision_and_actions(monkeypatch)
     fake = FakeChatModel(
         [
             ContextAssessment(
@@ -110,7 +160,7 @@ def test_asks_followup_then_completes(graph, monkeypatch):
     stages = [e.stage for e in get_status_bus().events_since(ticket_id)]
     assert stages[0] == "ticket_received"
     assert "info_complete" in stages
-    assert stages[-1] == "retrieval_done"
+    assert stages[-1] == "hitl_approved"
 
     # Resuming re-runs ask_followup from the top, so the question must not
     # be published a second time.
@@ -119,6 +169,7 @@ def test_asks_followup_then_completes(graph, monkeypatch):
 
 def test_skips_followup_when_context_is_complete(graph, monkeypatch):
     _stub_retrieval(monkeypatch)
+    _stub_decision_and_actions(monkeypatch)
     fake = FakeChatModel(
         [
             ContextAssessment(
@@ -143,6 +194,7 @@ def test_skips_followup_when_context_is_complete(graph, monkeypatch):
 def test_followup_budget_is_capped(graph, monkeypatch):
     """The node stops asking once max_followups is reached."""
     _stub_retrieval(monkeypatch)
+    _stub_decision_and_actions(monkeypatch)
     fake = FakeChatModel(
         [
             ContextAssessment(

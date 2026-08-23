@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nimbus Home — Agent HITL</title>
+    <link rel="stylesheet" href="/ui/agent/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand-mark">NH</span>
+          <div>
+            <h1>Agent review</h1>
+            <p>Approve, edit, or reject draft replies before anything is sent.</p>
+          </div>
+        </div>
+        <a class="customer-link" href="/" target="_blank" rel="noopener"
+          >Customer chat</a
+        >
+      </header>
+
+      <main class="layout">
+        <aside class="queue-panel">
+          <div class="queue-head">
+            <h2>HITL queue</h2>
+            <button type="button" id="refresh-queue" class="ghost-button">
+              Refresh
+            </button>
+          </div>
+          <p class="queue-sub">Tickets waiting for a human decision.</p>
+          <ul class="queue-list" id="queue-list">
+            <li class="queue-empty">No tickets waiting.</li>
+          </ul>
+        </aside>
+
+        <section class="review-panel" id="review-panel">
+          <div class="empty-review" id="empty-review">
+            <h2>Select a ticket</h2>
+            <p>Choose an item from the queue to review its draft and citations.</p>
+          </div>
+
+          <div class="review" id="review" hidden>
+            <div class="review-meta">
+              <div>
+                <span class="meta-label">Ticket</span>
+                <strong id="rev-ticket-id">—</strong>
+              </div>
+              <div>
+                <span class="meta-label">Route</span>
+                <strong id="rev-decision">—</strong>
+              </div>
+              <div>
+                <span class="meta-label">Confidence</span>
+                <strong id="rev-confidence">—</strong>
+              </div>
+            </div>
+
+            <div class="note" id="hitl-note" hidden></div>
+
+            <h3>Subject</h3>
+            <p id="rev-subject" class="plain">—</p>
+
+            <h3>Intake summary</h3>
+            <p id="rev-summary" class="plain">—</p>
+
+            <h3>Rationale</h3>
+            <p id="rev-rationale" class="plain">—</p>
+
+            <h3>Draft</h3>
+            <p class="customer-preview" id="customer-preview" hidden></p>
+            <textarea
+              id="draft-editor"
+              class="draft-editor"
+              rows="12"
+              maxlength="20000"
+            ></textarea>
+
+            <h3>Citations</h3>
+            <ul class="citations" id="citations">
+              <li class="citations-empty">None</li>
+            </ul>
+
+            <div class="actions">
+              <button type="button" class="btn primary" data-action="approve">
+                Approve
+              </button>
+              <button type="button" class="btn" data-action="edit">
+                Save edit &amp; approve
+              </button>
+              <button type="button" class="btn" data-action="request_regeneration">
+                Regenerate
+              </button>
+              <button type="button" class="btn warn" data-action="escalate">
+                Escalate
+              </button>
+              <button type="button" class="btn danger" data-action="reject">
+                Reject draft
+              </button>
+            </div>
+            <p class="action-hint" id="action-hint">
+              Approve sends the draft back to the customer UI as agent-approved
+              (still not auto-emailed).
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/ui/agent/app.js"></script>
+  </body>
+</html>

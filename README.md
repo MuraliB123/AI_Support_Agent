@@ -35,8 +35,16 @@ python -m src.main --show-config
 python -m src.main --serve
 ```
 
-Then open http://127.0.0.1:8000/. The intake assistant needs a real
-`DEEPSEEK_API_KEY` in `.env`; without one the UI reports a configuration error.
+Then open:
+
+- Customer chat: http://127.0.0.1:8000/
+- Agent HITL review: http://127.0.0.1:8000/agent
+
+The intake / decision / draft path needs a real `DEEPSEEK_API_KEY` in `.env`.
+Drafts are never auto-emailed — agents approve them in the HITL UI.
+
+Append-only ticket audit lines are written under `outputs/audit/{ticket_id}.jsonl`
+(conversation memory stays server-scoped in-process).
 
 Knowledge base commands:
 
@@ -64,9 +72,9 @@ notebooks/ tests/ outputs/ docs/
 2. Embed + Atlas vector index — done
 3. Ticket intake + conversation node + chat UI + status queue — done
 4. Retrieval node (query expansion, Atlas search, metadata filter, rerank) — done
-5. Decision node + escalate / reject / resolution actions
-6. HITL agent UI
-7. Ticket memory + audit logs
+5. Decision node + escalate / reject / resolution actions — done
+6. HITL agent UI — done
+7. JSONL audit logs (server-scoped memory) — done
 8. Synthetic tickets, eval, demo
 
 ## Spec

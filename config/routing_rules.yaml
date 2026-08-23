@@ -1,35 +1,38 @@
-# Thresholds used by LangGraph route + confidence loop (Phase 6)
+# Routing hints for decision + HITL (Phase 5+)
+# Authoritative reject rules live in src/agents/reject_scope.py (not KB).
+# Escalation criteria live in data/knowledge_base/escalation_criteria.md.
+
 routes:
-  auto_resolve:
-    min_confidence: 0.75
+  resolution:
+    min_confidence: 0.55
     require_citation: true
-    max_missing_fields: 0
-  ask_clarification:
-    # Missing order id, photos, etc.
-    when_missing_fields: true
   escalate:
     when_no_policy: true
     when_confidence_below: 0.45
+    # Inject escalation_criteria.md when retrieval has no escalation chunks
+    inject_escalation_policy_when_missing: true
     categories:
       - chargeback
       - legal
+      - fraud
       - vip_high_value
-  refuse:
+      - safety
+  reject:
+    # Inline REJECT_SCOPE — out of scope / sensitive info / scam
+    # Refuse / abuse scripts from KB map here too
     categories:
+      - out_of_scope
+      - sensitive_information
+      - scam
       - refund_abuse
       - abusive_language
 
-confidence_loop:
-  enabled: true
-  max_retries: 2
-  re_retrieve_on_weak_citations: true
-
 hitl:
   required_for:
-    - auto_resolve
     - escalate
-    - refuse
-    - ask_clarification
+    - reject
+    - resolution
+  low_confidence_threshold: 0.45
   actions:
     - approve
     - reject
