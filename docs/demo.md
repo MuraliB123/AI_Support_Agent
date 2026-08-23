@@ -72,15 +72,4 @@ Customer chat shows the **agent-approved draft** (still not auto-emailed). Statu
 
 ---
 
-## What this demo proves
-
-| Stage | Evidence in screenshots |
-| --- | --- |
-| Intake loop | Follow-up before retrieval |
-| Hybrid RAG | Status: expanding / searching / reranking / retrieval done |
-| Triage | Agent queue shows `resolution` + confidence |
-| Grounding | Citations (`REFUND-14DAY`, …) on the review panel |
-| HITL gate | Customer waits; approve unlocks the draft |
-| Draft-only | Hint: never auto-emailed |
-
 Audit trail for the sample ticket: `outputs/audit/TKT-77B95B24.jsonl`.
