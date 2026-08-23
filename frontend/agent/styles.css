@@ -1,17 +1,20 @@
 :root {
-  --bg: #12151c;
-  --surface: #1a2030;
-  --surface-2: #222a3c;
-  --border: #2d374d;
-  --text: #e8ecf5;
-  --muted: #9aa6bf;
-  --accent: #3d8bfd;
-  --accent-2: #2a6fd4;
-  --warn: #c9852c;
-  --danger: #c44b5a;
-  --ok: #3f9f6f;
-  --note: #3a2f1a;
-  --note-border: #8a6a2a;
+  --bg: #eef2f7;
+  --surface: #ffffff;
+  --surface-2: #f3f6fb;
+  --border: #d4dce8;
+  --text: #1a2433;
+  --muted: #5c6b82;
+  --accent: #2f6fed;
+  --accent-2: #2459c4;
+  --warn: #b8730f;
+  --danger: #c53d4d;
+  --ok: #1f8a58;
+  --note: #fff8e8;
+  --note-border: #e0c16a;
+  --note-text: #7a5a12;
+  --ok-bg: #e8f6ef;
+  --ok-text: #1a6b45;
 }
 
 * {
@@ -26,7 +29,7 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(900px 480px at 85% -10%, #24314a 0%, transparent 55%),
+    radial-gradient(900px 480px at 85% -10%, #d9e6fb 0%, transparent 55%),
     var(--bg);
   color: var(--text);
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -59,7 +62,8 @@ body {
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: linear-gradient(145deg, #3d8bfd, #1f4f9a);
+  background: linear-gradient(145deg, #3d82f0, #1f5bc4);
+  color: #fff;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -78,6 +82,7 @@ body {
   color: var(--accent);
   text-decoration: none;
   border: 1px solid var(--border);
+  background: var(--surface);
   padding: 8px 12px;
   border-radius: 8px;
 }
@@ -117,7 +122,7 @@ body {
 }
 
 .ghost-button {
-  background: transparent;
+  background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 6px;
@@ -154,6 +159,7 @@ body {
 
 .queue-item.active {
   border-color: var(--accent);
+  background: #eaf1ff;
 }
 
 .queue-item .qid {
@@ -171,7 +177,8 @@ body {
   display: inline-block;
   margin-top: 6px;
   font-size: 0.7rem;
-  color: #f0d090;
+  color: var(--note-text);
+  background: var(--note);
   border: 1px solid var(--note-border);
   padding: 2px 6px;
   border-radius: 999px;
@@ -200,7 +207,7 @@ body {
 .note {
   background: var(--note);
   border: 1px solid var(--note-border);
-  color: #f3e2b0;
+  color: var(--note-text);
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 14px;
@@ -218,9 +225,9 @@ body {
   margin: 0 0 10px;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid var(--ok);
-  background: #1a2e24;
-  color: #b8e0c8;
+  border: 1px solid #9fd4b5;
+  background: var(--ok-bg);
+  color: var(--ok-text);
   line-height: 1.45;
 }
 
@@ -281,16 +288,19 @@ body {
 .btn.primary {
   background: var(--accent);
   border-color: var(--accent-2);
+  color: #fff;
 }
 
 .btn.warn {
   border-color: var(--warn);
-  color: #f0c889;
+  color: var(--warn);
+  background: #fff8ec;
 }
 
 .btn.danger {
   border-color: var(--danger);
-  color: #f0a0aa;
+  color: var(--danger);
+  background: #fff0f2;
 }
 
 .action-hint {
