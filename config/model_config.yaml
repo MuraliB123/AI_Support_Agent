@@ -15,6 +15,6 @@ embeddings:
   normalize: true
 
 rerank:
-  # Phase 3: start with score fusion; optional LLM rerank later
+  # Phase 4: fuse vector + keyword lists; optional LLM rerank later
   strategy: reciprocal_rank_fusion
   llm_rerank: false

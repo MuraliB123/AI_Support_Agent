@@ -1,4 +1,4 @@
-"""Nimbus Home support agent entrypoint (scaffold)."""
+"""Nimbus Home support agent entrypoint."""
 
 from __future__ import annotations
 
@@ -10,14 +10,21 @@ from src.utils.config import get_app_config, get_model_config
 def main() -> None:
     parser = argparse.ArgumentParser(description="Nimbus Home AI Support Agent")
     parser.add_argument(
-        "--demo",
+        "--serve",
         action="store_true",
-        help="Run end-to-end demo (wired in later phases)",
+        help="Run the API + customer chat UI on http://127.0.0.1:8000",
+    )
+    parser.add_argument("--host", default="127.0.0.1", help="Bind host for --serve")
+    parser.add_argument("--port", type=int, default=8000, help="Bind port for --serve")
+    parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="Enable auto-reload while developing",
     )
     parser.add_argument(
         "--show-config",
         action="store_true",
-        help="Print loaded app/model config (Phase 0 smoke check)",
+        help="Print loaded app/model config",
     )
     args = parser.parse_args()
 
@@ -34,8 +41,16 @@ def main() -> None:
         )
         return
 
-    if args.demo:
-        print("Demo pipeline not implemented yet — complete Phases 1–8.")
+    if args.serve:
+        import uvicorn
+
+        print(f"Customer chat UI: http://{args.host}:{args.port}/")
+        uvicorn.run(
+            "src.api.server:app",
+            host=args.host,
+            port=args.port,
+            reload=args.reload,
+        )
         return
 
     parser.print_help()

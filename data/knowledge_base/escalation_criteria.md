@@ -48,16 +48,9 @@ Escalate when **any** apply:
 
 - Acknowledge receipt of concern
 - State that billing team will review
-- Provide timeline: **5 business days** for specialist response
+- Provide timeline: **2 business days** for specialist response
 - Route `ESCALATE-CHARGEBACK` immediately
 
-## VIP / High-Value Customers
-
-Customers with tag `VIP` or order **> $2,000**:
-
-- Priority queue
-- Senior agent assignment
-- May offer expedited replacement/shipping per `SHIP-SLA` exceptions (supervisor approval)
 
 ## Safety Incidents
 

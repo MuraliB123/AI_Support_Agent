@@ -29,6 +29,25 @@ python test-connection.py
 python -m src.main --show-config
 ```
 
+## Run the customer chat UI
+
+```powershell
+python -m src.main --serve
+```
+
+Then open http://127.0.0.1:8000/. The intake assistant needs a real
+`DEEPSEEK_API_KEY` in `.env`; without one the UI reports a configuration error.
+
+Knowledge base commands:
+
+```powershell
+python -m src.retrieval.ingest --dry-run   # preview chunks
+python -m src.retrieval.ingest             # chunk -> MongoDB
+python -m src.retrieval.embed              # add embedd vectors
+python -m src.retrieval.vector_search "How long do I have to return an item?"
+python -m src.retrieval.run_pipeline       # expand → vector + keyword → RRF
+```
+
 ## Layout
 
 ```
@@ -40,14 +59,14 @@ notebooks/ tests/ outputs/ docs/
 
 ## Build phases
 
-0. Scaffold (current)
-1. Ecommerce MD KB + chunking
-2. Embed + Atlas vector index
-3. Hybrid retrieve + rerank
-4. LCEL grounded draft + safety
-5. Customer/ticket memory
-6. LangGraph routes + confidence loop
-7. HITL + audit logs
+0. Scaffold — done
+1. Ecommerce MD KB + chunking — done
+2. Embed + Atlas vector index — done
+3. Ticket intake + conversation node + chat UI + status queue — done
+4. Retrieval node (query expansion, Atlas search, metadata filter, rerank) — done
+5. Decision node + escalate / reject / resolution actions
+6. HITL agent UI
+7. Ticket memory + audit logs
 8. Synthetic tickets, eval, demo
 
 ## Spec

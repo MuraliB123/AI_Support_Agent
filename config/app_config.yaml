@@ -11,11 +11,15 @@ paths:
   audit: outputs/audit
 
 mongodb:
-  database: nimbus_support
+  database: AI_KB
   collections:
-    chunks: kb_chunks
+    documents: documents
     memory: ticket_memory
     audit: audit_logs
+
+conversation:
+  # Clarifying questions the intake node may ask before moving to retrieval
+  max_followups: 3
 
 chunking:
   # Approximate token targets for heading-aware MD splits
@@ -27,6 +31,6 @@ retrieval:
   dense_top_k: 12
   sparse_top_k: 12
   rerank_top_n: 20
-  final_top_k: 5
+  final_top_k: 10
   # Soft tenancy: always include global + optional tenant scope
   default_scope: global

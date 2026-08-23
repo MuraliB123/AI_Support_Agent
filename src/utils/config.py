@@ -53,11 +53,26 @@ def get_mongodb_uri() -> str:
     return uri
 
 
+def get_mongodb_database() -> str:
+    load_env()
+    return os.getenv("DATABASE", "AI_KB")
+
+
+def get_mongodb_collection() -> str:
+    load_env()
+    return os.getenv("COLLECTION", "documents")
+
+
 def get_deepseek_api_key() -> str:
     load_env()
-    key = os.getenv("DEEPSEEK_API_KEY")
+    key = (os.getenv("DEEPSEEK_API_KEY") or "").strip()
     if not key:
         raise RuntimeError("DEEPSEEK_API_KEY is not set in .env")
+    if key.lower().startswith("your_"):
+        raise RuntimeError(
+            "DEEPSEEK_API_KEY in .env is still the placeholder from .env.example. "
+            "Set a real key from https://platform.deepseek.com/api_keys"
+        )
     return key
 
 

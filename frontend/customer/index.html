@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nimbus Home — Support</title>
+    <link rel="stylesheet" href="/ui/customer/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand-mark">NH</span>
+          <div>
+            <h1>Nimbus Home Support</h1>
+            <p>We reply with a draft reviewed by a human agent.</p>
+          </div>
+        </div>
+        <div class="ticket-badge" id="ticket-badge" hidden>
+          <span class="label">Ticket</span>
+          <span class="value" id="ticket-id">—</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="chat-panel">
+          <div class="chat-scroll" id="chat-scroll">
+            <div class="intro" id="intro">
+              <h2>How can we help?</h2>
+              <p>
+                Describe your issue and our assistant will collect the details it
+                needs before a specialist reviews it.
+              </p>
+            </div>
+          </div>
+
+          <form class="composer" id="composer" autocomplete="off">
+            <input
+              type="text"
+              id="subject-input"
+              class="subject-input"
+              placeholder="Subject (e.g. Refund for damaged kettle)"
+              maxlength="200"
+              required
+            />
+            <div class="composer-row">
+              <textarea
+                id="message-input"
+                class="message-input"
+                placeholder="Tell us what happened..."
+                rows="2"
+                maxlength="5000"
+                required
+              ></textarea>
+              <button type="submit" id="send-button" class="send-button">
+                Send
+              </button>
+            </div>
+            <p class="composer-hint" id="composer-hint">
+              Press Enter to send, Shift + Enter for a new line.
+            </p>
+          </form>
+        </section>
+
+        <aside class="status-panel">
+          <h2>Live status</h2>
+          <p class="status-sub">Updates stream in as your ticket moves along.</p>
+          <ol class="status-feed" id="status-feed">
+            <li class="status-empty">No activity yet.</li>
+          </ol>
+        </aside>
+      </main>
+    </div>
+
+    <script src="/ui/customer/app.js"></script>
+  </body>
+</html>
