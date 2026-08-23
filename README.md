@@ -117,3 +117,9 @@ outputs/audit/          # Per-ticket audit logs (runtime)
 ```
 
 ---
+
+## Docs
+
+- [Design documentation](docs/documentation.md) — architecture, retrieval, triage, HITL, and design choices
+- [Graph diagram](docs/support_graph.png)
+- [Product checklist](project_specifications.md)
