@@ -1,0 +1,1 @@
+"""Synthetic ticket evaluation package."""

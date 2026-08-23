@@ -97,23 +97,35 @@ python -m src.main --serve --reload
 pytest -q
 ```
 
+### 6. Evaluation (HITL skipped)
+
+```powershell
+python -m src.evaluation.run_eval
+```
+
+Writes `outputs/evaluation/report_latest.json`. Summary: [docs/evaluation.md](docs/evaluation.md).
+
 ## Repository layout
 
 ```
 config/                 # YAML: app, models, routing
 data/knowledge_base/    # Policy Markdown
-docs/support_graph.png  # Compiled LangGraph diagram
+data/tickets/           # Synthetic ticket queue
+data/evaluation/        # Golden expected routes
+docs/                   # Design, demo, evaluation
 frontend/               # Customer + agent static UIs
 src/
   agents/               # Graph node implementations
   api/                  # FastAPI + ticket runner
-  graph/                # State + graph wiring
+  evaluation/           # Offline golden eval runner
+  graph/                # State + graph wiring (incl. build_eval_graph)
   logging/              # JSONL audit
   queue/                # Live status events
   retrieval/            # Ingest, embed, search, pipeline
   main.py               # CLI entry (--serve, --show-config)
 tests/
 outputs/audit/          # Per-ticket audit logs (runtime)
+outputs/evaluation/     # Eval JSON reports (runtime)
 ```
 
 ---
@@ -122,5 +134,6 @@ outputs/audit/          # Per-ticket audit logs (runtime)
 
 - [Design documentation](docs/documentation.md) — architecture, retrieval, triage, HITL, and design choices
 - [Demo walkthrough](docs/demo.md) — screenshot tour of a full ticket
+- [Evaluation report](docs/evaluation.md) — synthetic tickets, expected vs actual routes
 - [Graph diagram](docs/support_graph.png)
 - [Product checklist](project_specifications.md)

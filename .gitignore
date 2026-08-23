@@ -27,3 +27,7 @@ Thumbs.db
 
 # Local audit artifacts
 outputs/audit/
+
+# Eval run artifacts (keep docs; regenerate JSON via run_eval)
+outputs/evaluation/
+!outputs/evaluation/.gitkeep

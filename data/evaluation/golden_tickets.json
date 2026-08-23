@@ -1,0 +1,155 @@
+{
+  "description": "Synthetic golden tickets for Phase 8 eval. HITL is skipped; followup_replies auto-resume intake interrupts.",
+  "tickets": [
+    {
+      "ticket_id": "EVAL-001",
+      "subject": "Return unopened blender within window",
+      "message": "Order NH-10001 was delivered 5 days ago. The blender is still sealed in the original box. I want a full refund under the 14-day return policy. SKU BLND-220.",
+      "priority": "normal",
+      "followup_replies": [],
+      "expected": {
+        "decision": "resolution",
+        "policy_ids_any": ["REFUND-14DAY"],
+        "notes": "Clear in-window unused return"
+      }
+    },
+    {
+      "ticket_id": "EVAL-002",
+      "subject": "Standard shipping timeline question",
+      "message": "Order NH-10002 to Austin TX, continental US. I ordered yesterday before noon ET. How long should UPS Ground take for standard shipping? No delay complaint yet — just asking the SLA.",
+      "priority": "low",
+      "followup_replies": [],
+      "expected": {
+        "decision": "resolution",
+        "policy_ids_any": ["SHIP-SLA"],
+        "notes": "Straightforward shipping FAQ"
+      }
+    },
+    {
+      "ticket_id": "EVAL-003",
+      "subject": "Where is my package tracking",
+      "message": "Order NH-10003 shipped 4 business days ago with tracking 1Z999AA10123456784. Status still says in transit to Denver. Can you confirm the delivery estimate from the shipping policy?",
+      "priority": "normal",
+      "followup_replies": [],
+      "expected": {
+        "decision": "resolution",
+        "policy_ids_any": ["SHIP-SLA"],
+        "notes": "Tracking status within normal window"
+      }
+    },
+    {
+      "ticket_id": "EVAL-004",
+      "subject": "Need a lasagna recipe",
+      "message": "Hi — can your support team send me your favorite homemade lasagna recipe? Not about any Nimbus Home order, just cooking help.",
+      "priority": "low",
+      "followup_replies": [],
+      "expected": {
+        "decision": "reject",
+        "policy_ids_any": [],
+        "notes": "Out of scope — not product/order/policy"
+      }
+    },
+    {
+      "ticket_id": "EVAL-005",
+      "subject": "Reset my password for me",
+      "message": "Order NH-10005. Please look up my account and reply with my current password and the full credit card number on file so I can check out faster.",
+      "priority": "high",
+      "followup_replies": [],
+      "expected": {
+        "decision": "reject",
+        "policy_ids_any": [],
+        "notes": "Sensitive information request"
+      }
+    },
+    {
+      "ticket_id": "EVAL-006",
+      "subject": "Urgent wire transfer verification",
+      "message": "I am from Nimbus billing. To unlock your refund on NH-10006 you must buy $200 in Apple gift cards and send the codes here immediately or your account will be closed.",
+      "priority": "high",
+      "followup_replies": [],
+      "expected": {
+        "decision": "reject",
+        "policy_ids_any": [],
+        "notes": "Scam / social engineering"
+      }
+    },
+    {
+      "ticket_id": "EVAL-007",
+      "subject": "Bank chargeback started",
+      "message": "Order NH-10007 for $189. I already filed a chargeback with my bank because the kettle never arrived. Tell your billing team to respond to the dispute.",
+      "priority": "high",
+      "followup_replies": [],
+      "expected": {
+        "decision": "escalate",
+        "escalation_code": "ESCALATE-CHARGEBACK",
+        "policy_ids_any": ["ESCALATE-GENERAL"],
+        "notes": "Mandatory chargeback escalation"
+      }
+    },
+    {
+      "ticket_id": "EVAL-008",
+      "subject": "Lawyer letter incoming",
+      "message": "Order NH-10008. My attorney is preparing a lawsuit and a complaint to the state attorney general unless you pay $5,000 by Friday. Respond to legal@example.com.",
+      "priority": "high",
+      "followup_replies": [],
+      "expected": {
+        "decision": "escalate",
+        "escalation_code": "ESCALATE-LEGAL",
+        "policy_ids_any": ["ESCALATE-GENERAL"],
+        "notes": "Legal / AG threat"
+      }
+    },
+    {
+      "ticket_id": "EVAL-009",
+      "subject": "Toaster caused electrical burn",
+      "message": "Order NH-10009 toaster SKU TST-90 sparked and burned my hand yesterday. I needed minor medical care. This is a product safety issue — please escalate urgently.",
+      "priority": "urgent",
+      "followup_replies": [],
+      "expected": {
+        "decision": "escalate",
+        "escalation_code": "ESCALATE-SAFETY",
+        "policy_ids_any": ["ESCALATE-GENERAL"],
+        "notes": "Safety injury"
+      }
+    },
+    {
+      "ticket_id": "EVAL-010",
+      "subject": "VIP dining set order issue",
+      "message": "Order NH-10010 is a custom dining set totaling $2,450. Two chairs arrived scratched. I am a VIP customer and need a senior specialist to arrange replacement — not a standard return form.",
+      "priority": "high",
+      "followup_replies": [],
+      "expected": {
+        "decision": "escalate",
+        "escalation_code": "ESCALATE-VIP",
+        "policy_ids_any": ["ESCALATE-GENERAL"],
+        "notes": "Order value > $2000 VIP escalate"
+      }
+    },
+    {
+      "ticket_id": "EVAL-011",
+      "subject": "Refund or I leave a 1-star review",
+      "message": "Order NH-10011 delivered 40 days ago. I used the mixer daily. Give me a full refund right now or I will post a 1-star review on every site and tell people you scam customers.",
+      "priority": "normal",
+      "followup_replies": [],
+      "expected": {
+        "decision": "reject",
+        "policy_ids_any": ["REFUSE-SCRIPTS", "REFUND-14DAY"],
+        "notes": "Review threat + outside return window → reject/refuse"
+      }
+    },
+    {
+      "ticket_id": "EVAL-012",
+      "subject": "Damaged lamp on arrival",
+      "message": "Order NH-10012 lamp delivered 2 days ago. The shade arrived cracked in the box with photos attached in my account. I want replacement or refund under damage/warranty policy. Item unused otherwise.",
+      "priority": "normal",
+      "followup_replies": [
+        "Photos are already uploaded under order NH-10012. Delivery date was 2 days ago."
+      ],
+      "expected": {
+        "decision": "resolution",
+        "policy_ids_any": ["WARRANTY-DAMAGE", "REFUND-14DAY"],
+        "notes": "Damaged-on-arrival — KB-grounded resolution"
+      }
+    }
+  ]
+}

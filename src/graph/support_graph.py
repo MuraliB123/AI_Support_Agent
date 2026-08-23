@@ -121,6 +121,44 @@ def get_compiled_graph():
     return build_graph().compile(checkpointer=InMemorySaver())
 
 
+def build_eval_graph() -> StateGraph:
+    """Same pipeline as production, but action nodes end the run (no HITL)."""
+    graph = StateGraph(SupportState)
+
+    graph.add_node("ticket_in", ticket_in)
+    graph.add_node("assess_context", _assess_context)
+    graph.add_node("ask_followup", _ask_followup)
+    graph.add_node("retrieval", _retrieve)
+    graph.add_node("decision", _decide)
+    graph.add_node("action_escalate", _action_escalate)
+    graph.add_node("action_reject", _action_reject)
+    graph.add_node("action_resolution", _action_resolution)
+
+    graph.add_edge(START, "ticket_in")
+    graph.add_edge("ticket_in", "assess_context")
+    graph.add_conditional_edges(
+        "assess_context",
+        conversation_module.route_after_assessment,
+        {"need_more_info": "ask_followup", "enough_context": "retrieval"},
+    )
+    graph.add_edge("ask_followup", "assess_context")
+    graph.add_edge("retrieval", "decision")
+    graph.add_conditional_edges(
+        "decision",
+        decision_module.route_after_decision,
+        {
+            "escalate": "action_escalate",
+            "reject": "action_reject",
+            "resolution": "action_resolution",
+        },
+    )
+    graph.add_edge("action_escalate", END)
+    graph.add_edge("action_reject", END)
+    graph.add_edge("action_resolution", END)
+
+    return graph
+
+
 def reset_compiled_graph() -> None:
     """Drop the cached graph (useful after code changes in the same process)."""
     get_compiled_graph.cache_clear()
