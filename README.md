@@ -121,5 +121,6 @@ outputs/audit/          # Per-ticket audit logs (runtime)
 ## Docs
 
 - [Design documentation](docs/documentation.md) — architecture, retrieval, triage, HITL, and design choices
+- [Demo walkthrough](docs/demo.md) — screenshot tour of a full ticket
 - [Graph diagram](docs/support_graph.png)
 - [Product checklist](project_specifications.md)
