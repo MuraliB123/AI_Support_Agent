@@ -12,9 +12,7 @@ Built with **LangGraph**, **DeepSeek**, local **BGE** embeddings, and **MongoDB 
 
 ---
 
-## Architecture
-
-### LangGraph flow
+## LangGraph flow
 
 ![Support agent graph](docs/support_graph.png)
 
