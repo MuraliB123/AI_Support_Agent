@@ -1,82 +1,140 @@
-# Nimbus Home — AI Support Agent
+# Knowledge Base Support Agent
 
-Learning project: ecommerce support ticket triage & resolution with **DeepSeek** (chat), local **BGE** embeddings, **MongoDB Atlas** vectors, **LCEL** RAG, and **LangGraph** routing.
+Built with **LangGraph**, **DeepSeek**, local **BGE** embeddings, and **MongoDB Atlas** hybrid retrieval.
 
-Replies are **drafts only** (never auto-sent). Policies are quoted from the Markdown KB; missing policy → escalate, never fabricate.
-
-## Stack (Phase 0)
-
-| Concern | Choice |
+| Guarantee | Behavior |
 | --- | --- |
-| Chat / agents | DeepSeek via `langchain-deepseek` |
-| Embeddings | `BAAI/bge-small-en-v1.5` (384-dim, local) |
-| Vectors / memory | MongoDB Atlas (`MONGODB_URI`) |
-| Orchestration | LangChain LCEL + LangGraph (later phases) |
+| Draft-only | Replies never auto-send |
+| Grounded | Answers quote the Markdown knowledge base |
+| No fabrication | Missing policy → escalate, do not invent |
+| HITL gate | Approve / edit / reject / regenerate / escalate |
+| Auditable | Append-only JSONL under `outputs/audit/` |
 
-## Setup
+---
+
+## Architecture
+
+### LangGraph flow
+
+![Support agent graph](docs/support_graph.png)
+
+**What each stage does**
+
+| Node | Role |
+| --- | --- |
+| `ticket_in` | Entry node: seeds `followup_count`, publishes `ticket_received` on the in-process status bus (SSE to the customer UI). |
+| `assess_context` / `ask_followup` | DeepSeek structured output (`ContextAssessment`): enough context vs missing fields. Follow-ups use LangGraph `interrupt()` until the customer replies; loops until enough or `max_followups` (config). |
+| `retrieval` | LLM query expansion → Atlas `$vectorSearch` (BGE `embedd`, 384-d) + metadata/keyword search → Reciprocal Rank Fusion → `final_top_k` chunks + citation view on state. |
+| `decision` | Structured triage over retrieved passages + injected escalation MD + inline reject scope → `escalate` \| `reject` \| `resolution`, confidence score, cited chunk ids. |
+| `action_*` | Separate draft nodes (DeepSeek structured `ActionDraft`): grounded customer reply, refuse script, or internal escalate note; never sends email. |
+| `hitl_review` | LangGraph `interrupt()` with draft, citations, low-confidence flag; resumes via `Command(resume=…)` for approve / edit / reject / regenerate / escalate. |
+
+
+**UIs**
+
+- Customer: http://127.0.0.1:8000/ — open ticket, chat, live status
+- Agent: http://127.0.0.1:8000/agent — HITL queue, draft review, citations
+
+---
+
+## Quick start
+
+### 1. Prerequisites
+
+- Python 3.11+
+- MongoDB Atlas cluster with a vector search index on the documents collection
+- DeepSeek API key
+
+### 2. Environment
 
 ```powershell
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy .env.example .env
-# Edit .env: set DEEPSEEK_API_KEY and MONGODB_URI
+```
+
+Fill `.env` (minimum):
+
+```env
+DEEPSEEK_API_KEY=sk-...
+MONGODB_URI=mongodb+srv://...
+```
+
+
+### 3. Knowledge base → Atlas
+
+```powershell
+python -m src.retrieval.ingest             # chunk MD → MongoDB
+python -m src.retrieval.embed              # write BGE vectors to embedd
 ```
 
 Smoke checks:
 
 ```powershell
-python test-connection.py
 python -m src.main --show-config
+python -m src.retrieval.vector_search "How long do I have to return an item?"
+python -m src.retrieval.run_pipeline
 ```
 
-## Run the customer chat UI
+### 4. Run locally
 
 ```powershell
+.\.venv\Scripts\Activate.ps1
 python -m src.main --serve
 ```
 
-Then open:
+| Surface | URL |
+| --- | --- |
+| Customer chat | http://127.0.0.1:8000/ |
+| Agent HITL | http://127.0.0.1:8000/agent |
+| Health | http://127.0.0.1:8000/api/health |
 
-- Customer chat: http://127.0.0.1:8000/
-- Agent HITL review: http://127.0.0.1:8000/agent
-
-The intake / decision / draft path needs a real `DEEPSEEK_API_KEY` in `.env`.
-Drafts are never auto-emailed — agents approve them in the HITL UI.
-
-Append-only ticket audit lines are written under `outputs/audit/{ticket_id}.jsonl`
-(conversation memory stays server-scoped in-process).
-
-Knowledge base commands:
+Dev reload:
 
 ```powershell
-python -m src.retrieval.ingest --dry-run   # preview chunks
-python -m src.retrieval.ingest             # chunk -> MongoDB
-python -m src.retrieval.embed              # add embedd vectors
-python -m src.retrieval.vector_search "How long do I have to return an item?"
-python -m src.retrieval.run_pipeline       # expand → vector + keyword → RRF
+python -m src.main --serve --reload
 ```
 
-## Layout
+### 5. Tests
 
-```
-config/           # app, model, routing YAML
-data/             # tickets, knowledge_base, evaluation
-src/              # graph, agents, retrieval, memory, hitl, safety, ...
-notebooks/ tests/ outputs/ docs/
+```powershell
+pytest -q
 ```
 
-## Build phases
+---
 
-0. Scaffold — done
-1. Ecommerce MD KB + chunking — done
-2. Embed + Atlas vector index — done
-3. Ticket intake + conversation node + chat UI + status queue — done
-4. Retrieval node (query expansion, Atlas search, metadata filter, rerank) — done
-5. Decision node + escalate / reject / resolution actions — done
-6. HITL agent UI — done
-7. JSONL audit logs (server-scoped memory) — done
-8. Synthetic tickets, eval, demo
+## Typical ticket path
 
-## Spec
+1. Customer opens a ticket in the chat UI.
+2. Conversation agent asks follow-ups until context is enough.
+3. Hybrid retrieval pulls grounded policy chunks.
+4. Decision agent routes to **resolution**, **reject**, or **escalate**.
+5. Action node drafts a reply.
+6. Graph pauses at HITL; agent approves, edits, rejects, regenerates, or escalates.
+7. Audit line appended under `outputs/audit/{ticket_id}.jsonl`.
 
-See [project_specifications.md](project_specifications.md).
+Conversation + checkpointer memory are **server-scoped** (in-process). Restart clears paused runs and the status bus.
+
+---
+
+## Repository layout
+
+```
+config/                 # YAML: app, models, routing
+data/knowledge_base/    # Policy Markdown
+docs/support_graph.png  # Compiled LangGraph diagram
+frontend/               # Customer + agent static UIs
+src/
+  agents/               # Graph node implementations
+  api/                  # FastAPI + ticket runner
+  graph/                # State + graph wiring
+  logging/              # JSONL audit
+  queue/                # Live status events
+  retrieval/            # Ingest, embed, search, pipeline
+  main.py               # CLI entry (--serve, --show-config)
+tests/
+outputs/audit/          # Per-ticket audit logs (runtime)
+```
+
+---
